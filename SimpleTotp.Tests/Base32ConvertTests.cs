@@ -83,5 +83,87 @@ namespace SimpleTotp.Tests
 
             Assert.Equal(expected, result);
         }
+
+        [Fact]
+        public void Given_Base32Converter_When_NullBase32StringIsConvertedToByteArray_Then_ResultIsNull()
+        {
+            var base32String = default(String);
+            
+            var result = Base32Convert.FromBase32String(base32String);
+
+            Assert.Null(result);
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("    ")]
+        [InlineData("\t")]
+        public void Given_Base32Converter_When_WhitespaceBase32StringIsConvertedToByteArray_Then_ResultIsEmptyArray(String base32String)
+        {
+            var result = Base32Convert.FromBase32String(base32String);
+
+            Assert.Empty(result);
+        }
+
+        [Theory]
+        [InlineData("11")]
+        [InlineData("BB=B==")]
+        [InlineData("    GEZDGNBVGY======")]
+        public void Given_Base32Converter_When_ANonBase32StringIsConvertedToByteArray_Then_AnExceptionIsThrown(String base32String)
+        {
+            Assert.Throws<ArgumentException>(() => Base32Convert.FromBase32String(base32String));
+        }
+
+        [Theory]
+        [InlineData("12345", "GEZDGNBV")]
+        [InlineData("123456", "GEZDGNBVGY")]
+        [InlineData("123456", "GEZDGNBVGY======")]
+        [InlineData("1234567", "GEZDGNBVGY3Q")]
+        [InlineData("1234567", "GEZDGNBVGY3Q====")]
+        [InlineData("12345678", "GEZDGNBVGY3TQ")]
+        [InlineData("12345678", "GEZDGNBVGY3TQ===")]
+        [InlineData("123456789", "GEZDGNBVGY3TQOI")]
+        [InlineData("123456789", "GEZDGNBVGY3TQOI=")]
+        [InlineData("1234567890", "GEZDGNBVGY3TQOJQ")]
+        public void Given_Base32Converter_When_ABase32StringIsConvertedToByteArray_Then_CorrectDataIsReturned(
+            String expected,
+            String base32String)
+        {
+            var result = Base32Convert.FromBase32String(base32String);
+
+            Assert.Equal(expected, Encoding.UTF8.GetString(result));
+        }
+        
+        [Theory]
+        [InlineData("12345")]
+        [InlineData("Zażółć gęślą jaźń")]
+        [InlineData("!@#$%^&*(){}:")]
+        public void
+            Given_Base32Converter_When_AStringInUTF8IsConvertedToBase32StringWithPaddingAndBack_Then_ItIsTheSameAsTheOriginalString(
+                String input)
+        {
+            var pad = true;
+
+            var base32 = Base32Convert.ToBase32String(Encoding.UTF8.GetBytes(input), pad);
+            var result = Base32Convert.FromBase32String(base32);
+
+            Assert.Equal(input, Encoding.UTF8.GetString(result));
+        }
+
+        [Theory]
+        [InlineData("12345")]
+        [InlineData("Zażółć gęślą jaźń")]
+        [InlineData("!@#$%^&*(){}:")]
+        public void
+            Given_Base32Converter_When_AStringInUTF8IsConvertedToBase32StringWithoutPaddingAndBack_Then_ItIsTheSameAsTheOriginalString(
+                String input)
+        {
+            var pad = false;
+
+            var base32 = Base32Convert.ToBase32String(Encoding.UTF8.GetBytes(input), pad);
+            var result = Base32Convert.FromBase32String(base32);
+
+            Assert.Equal(input, Encoding.UTF8.GetString(result));
+        }
     }
 }

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace SimpleTotp
@@ -17,9 +19,9 @@ namespace SimpleTotp
         private const int BlockLength = 5;
 
         /// <summary>
-        /// Length of the block in the Base32 conversion algorithm - in bits
+        /// Number of bits in byte (duh!) - used for readability only
         /// </summary>
-        private const int BlockLengthBits = BlockLength * 8;
+        private const int BitsInByte = 8;
 
         /// <summary>
         /// Base32 padding character
@@ -52,19 +54,19 @@ namespace SimpleTotp
                 return String.Empty;
             }
 
-            var inputBitsBuilder = new StringBuilder(input.Length * 8 + BlockLength - 1);
+            var inputBitsBuilder = new StringBuilder(input.Length * BitsInByte + BlockLength - 1);
             foreach (var b in input)
             {
                 var value = Convert.ToString(b, 2);
-                inputBitsBuilder.Append(new String('0', 8 - value.Length));
+                inputBitsBuilder.Append(new String('0', BitsInByte - value.Length));
                 inputBitsBuilder.Append(value);
             }
 
-            inputBitsBuilder.Append(new String('0', 7));
+            inputBitsBuilder.Append(new String('0', BlockLength - 1));
 
             var inputBits = inputBitsBuilder.ToString();
-            var result = new StringBuilder(input.Length * 8 / 5 + 6);
-            for (int i = 0; i < input.Length * 8; i += BlockLength)
+            var result = new StringBuilder(input.Length * BitsInByte / BlockLength + 6);
+            for (int i = 0; i < input.Length * BitsInByte; i += BlockLength)
             {
                 var block = inputBits.Substring(i, BlockLength);
 
@@ -74,10 +76,41 @@ namespace SimpleTotp
             if (pad)
             {
                 result.Append(new String(PaddingChar,
-                                         (BlockLengthBits - input.Length * 8 % BlockLengthBits) % BlockLengthBits / 5));
+                                         (BlockLength * BitsInByte - input.Length * BitsInByte % (BlockLength * BitsInByte))
+                                         % (BlockLength * BitsInByte) / BlockLength));
             }
 
             return result.ToString();
+        }
+
+        public static byte[] FromBase32String(String base32String)
+        {
+            if (base32String == null)
+                return null;
+            if (String.IsNullOrWhiteSpace(base32String))
+                return new byte[0];
+
+            var sanitized = base32String.TrimEnd(PaddingChar).ToCharArray();
+
+            if (sanitized.Any(c => !Base32CharacterSet.Contains(c)))
+            {
+                throw new ArgumentException("Provided input string is not Base32", nameof(base32String));
+            }
+
+            var inputBitsBuilder = new StringBuilder(sanitized.Length * BlockLength + BitsInByte - 1);
+            foreach (var index in sanitized.Select(c => Array.IndexOf(Base32CharacterSet, c)))
+            {
+                var value = Convert.ToString(index, 2);
+                inputBitsBuilder.Append(new String('0', BlockLength - value.Length));
+                inputBitsBuilder.Append(value);
+            }
+
+            inputBitsBuilder.Append(new String('0', BitsInByte - 1));
+            var inputBits = inputBitsBuilder.ToString();
+
+            return Enumerable.Range(0, sanitized.Length * BlockLength / BitsInByte)
+                             .Select(i => Convert.ToByte(inputBits.Substring(i * BitsInByte, BitsInByte), 2))
+                             .ToArray();
         }
     }
 }
