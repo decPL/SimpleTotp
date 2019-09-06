@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -37,12 +36,12 @@ namespace SimpleTotp
         /// Converts input byte array to a Base32 string.
         /// </summary>
         /// <param name="input">Input data</param>
-        /// <param name="pad">
+        /// <param name="applyPadding">
         /// True if '=' padding should be added, false otherwise (default: true)
         /// <see href="https://tools.ietf.org/html/rfc3548"/>
         /// </param>
         /// <returns>Base32 string representation of the input data</returns>
-        public static String ToBase32String(byte[] input, bool pad = true)
+        public static String ToBase32String(byte[] input, bool applyPadding = true)
         {
             if (input == null)
             {
@@ -73,7 +72,7 @@ namespace SimpleTotp
                 result.Append(Base32CharacterSet[Convert.ToInt32(block, 2)]);
             }
 
-            if (pad)
+            if (applyPadding)
             {
                 result.Append(new String(PaddingChar,
                                          (BlockLength * BitsInByte - input.Length * BitsInByte % (BlockLength * BitsInByte))

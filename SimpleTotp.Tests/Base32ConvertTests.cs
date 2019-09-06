@@ -12,9 +12,9 @@ namespace SimpleTotp.Tests
         public void Given_Base32Converter_When_NullArrayIsConvertedToBase32StringWithPadding_Then_ResultIsNull()
         {
             var input = default(byte[]);
-            var pad = true;
+            var applyPadding = true;
 
-            var result = Base32Convert.ToBase32String(input, pad);
+            var result = Base32Convert.ToBase32String(input, applyPadding);
 
             Assert.Null(result);
         }
@@ -23,9 +23,9 @@ namespace SimpleTotp.Tests
         public void Given_Base32Converter_When_NullArrayIsConvertedToBase32StringWithoutPadding_Then_ResultIsNull()
         {
             var input = default(byte[]);
-            var pad = false;
+            var applyPadding = false;
 
-            var result = Base32Convert.ToBase32String(input, pad);
+            var result = Base32Convert.ToBase32String(input, applyPadding);
 
             Assert.Null(result);
         }
@@ -34,9 +34,9 @@ namespace SimpleTotp.Tests
         public void Given_Base32Converter_When_EmptyArrayIsConvertedToBase32StringWithPadding_Then_ResultIsEmpty()
         {
             var input = new byte[0];
-            var pad = true;
+            var applyPadding = true;
 
-            var result = Base32Convert.ToBase32String(input, pad);
+            var result = Base32Convert.ToBase32String(input, applyPadding);
 
             Assert.Equal(String.Empty, result);
         }
@@ -45,9 +45,9 @@ namespace SimpleTotp.Tests
         public void Given_Base32Converter_When_EmptyArrayIsConvertedToBase32StringWithoutPadding_Then_ResultIsEmpty()
         {
             var input = new byte[0];
-            var pad = false;
+            var applyPadding = false;
 
-            var result = Base32Convert.ToBase32String(input, pad);
+            var result = Base32Convert.ToBase32String(input, applyPadding);
 
             Assert.Equal(String.Empty, result);
         }
@@ -61,9 +61,9 @@ namespace SimpleTotp.Tests
         [InlineData("1234567890", "GEZDGNBVGY3TQOJQ")]
         public void Given_Base32Converter_When_AStringInUTF8IsConvertedToBase32StringWithPadding_Then_ResultIsCorrect(String input, String expected)
         {
-            var pad = true;
+            var applyPadding = true;
 
-            var result = Base32Convert.ToBase32String(Encoding.UTF8.GetBytes(input), pad);
+            var result = Base32Convert.ToBase32String(Encoding.UTF8.GetBytes(input), applyPadding);
 
             Assert.Equal(expected, result);
         }
@@ -77,9 +77,9 @@ namespace SimpleTotp.Tests
         [InlineData("1234567890", "GEZDGNBVGY3TQOJQ")]
         public void Given_Base32Converter_When_AStringInUTF8IsConvertedToBase32StringWithoutPadding_Then_ResultIsCorrect(String input, String expected)
         {
-            var pad = false;
+            var applyPadding = false;
 
-            var result = Base32Convert.ToBase32String(Encoding.UTF8.GetBytes(input), pad);
+            var result = Base32Convert.ToBase32String(Encoding.UTF8.GetBytes(input), applyPadding);
 
             Assert.Equal(expected, result);
         }
@@ -142,9 +142,9 @@ namespace SimpleTotp.Tests
             Given_Base32Converter_When_AStringInUTF8IsConvertedToBase32StringWithPaddingAndBack_Then_ItIsTheSameAsTheOriginalString(
                 String input)
         {
-            var pad = true;
+            var applyPadding = true;
 
-            var base32 = Base32Convert.ToBase32String(Encoding.UTF8.GetBytes(input), pad);
+            var base32 = Base32Convert.ToBase32String(Encoding.UTF8.GetBytes(input), applyPadding);
             var result = Base32Convert.FromBase32String(base32);
 
             Assert.Equal(input, Encoding.UTF8.GetString(result));
@@ -158,9 +158,9 @@ namespace SimpleTotp.Tests
             Given_Base32Converter_When_AStringInUTF8IsConvertedToBase32StringWithoutPaddingAndBack_Then_ItIsTheSameAsTheOriginalString(
                 String input)
         {
-            var pad = false;
+            var applyPadding = false;
 
-            var base32 = Base32Convert.ToBase32String(Encoding.UTF8.GetBytes(input), pad);
+            var base32 = Base32Convert.ToBase32String(Encoding.UTF8.GetBytes(input), applyPadding);
             var result = Base32Convert.FromBase32String(base32);
 
             Assert.Equal(input, Encoding.UTF8.GetString(result));
