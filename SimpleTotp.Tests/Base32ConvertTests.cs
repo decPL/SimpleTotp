@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Xunit;
 // ReSharper disable ExpressionIsAlwaysNull
@@ -6,6 +7,7 @@ using Xunit;
 
 namespace SimpleTotp.Tests
 {
+    [ExcludeFromCodeCoverage]
     public class Base32ConvertTests
     {
         [Fact]
