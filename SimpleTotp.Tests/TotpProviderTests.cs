@@ -18,7 +18,7 @@ namespace SimpleTotp.Tests
         public void Given_AnEmptyAccountName_When_GetAuthenticatorRegistrationDataIsCalled_Then_AnArgumentExceptionIsThrown(
             String accountName)
         {
-            var provider = new TotpProvider();
+            ITotpProvider provider = new TotpProvider();
 
             Assert.Throws<ArgumentException>(() => provider.GetAuthenticatorRegistrationData(accountName, "ISSUER"));
         }
@@ -31,7 +31,7 @@ namespace SimpleTotp.Tests
         public void Given_AnEmptyIssuer_When_GetAuthenticatorRegistrationDataIsCalled_Then_AnArgumentExceptionIsThrown(
             String issuer)
         {
-            var provider = new TotpProvider();
+            ITotpProvider provider = new TotpProvider();
 
             Assert.Throws<ArgumentException>(() => provider.GetAuthenticatorRegistrationData("ACCOUNTNAME", issuer));
         }
@@ -39,7 +39,7 @@ namespace SimpleTotp.Tests
         [Fact]
         public void Given_AnAccountNameWithColon_When_GetAuthenticatorRegistrationDataIsCalled_Then_AnArgumentExceptionIsThrown()
         {
-            var provider = new TotpProvider();
+            ITotpProvider provider = new TotpProvider();
 
             Assert.Throws<ArgumentException>(() => provider.GetAuthenticatorRegistrationData("ACCOUNT:NAME", "ISSUER"));
         }
@@ -47,7 +47,7 @@ namespace SimpleTotp.Tests
         [Fact]
         public void Given_AnIssuerWithColon_When_GetAuthenticatorRegistrationDataIsCalled_Then_AnArgumentExceptionIsThrown()
         {
-            var provider = new TotpProvider();
+            ITotpProvider provider = new TotpProvider();
 
             Assert.Throws<ArgumentException>(() => provider.GetAuthenticatorRegistrationData("ACCOUNTNAME", "ISS:UER"));
         }
@@ -60,7 +60,7 @@ namespace SimpleTotp.Tests
         public void Given_AnEmptySecretKey_When_GetAuthenticatorRegistrationDataIsCalled_Then_ANewSecretKeyIsGenerated(
             String secretKey)
         {
-            var provider = new TotpProvider();
+            ITotpProvider provider = new TotpProvider();
 
             var result = provider.GetAuthenticatorRegistrationData("ACCOUNT_NAME", "ISSUER", secretKey);
 
@@ -79,7 +79,7 @@ namespace SimpleTotp.Tests
             String secretKey,
             String expected)
         {
-            var provider = new TotpProvider();
+            ITotpProvider provider = new TotpProvider();
 
             var result = provider.GetAuthenticatorRegistrationData("ACCOUNT_NAME", "ISSUER", secretKey);
 
@@ -104,7 +104,7 @@ namespace SimpleTotp.Tests
             String accountName,
             String expectedQrCode)
         {
-            var provider = new TotpProvider();
+            ITotpProvider provider = new TotpProvider();
 
             var result = provider.GetAuthenticatorRegistrationData(accountName, issuer, secretKey);
 
@@ -132,7 +132,7 @@ namespace SimpleTotp.Tests
             String accountName,
             String expectedQrCode)
         {
-            var provider = new TotpProvider();
+            ITotpProvider provider = new TotpProvider();
 
             var result = provider.GetAuthenticatorRegistrationData(accountName, issuer, secretKey, false);
 
@@ -151,7 +151,7 @@ namespace SimpleTotp.Tests
         public void Given_AnEmptySecretKey_When_GetCodeAtSpecificTimeIsCalled_Then_AnArgumentExceptionIsThrown(
             String secretKey)
         {
-            var provider = new TotpProvider();
+            ITotpProvider provider = new TotpProvider();
 
             Assert.Throws<ArgumentException>(() => provider.GetCodeAtSpecificTime(secretKey,
                                                                                   DateTimeOffset.Parse("2019-09-16",
@@ -164,7 +164,7 @@ namespace SimpleTotp.Tests
         public void Given_ATimeBeforeUnixEpoch_When_GetCodeAtSpecificTimeIsCalled_Then_AnArgumentExceptionIsThrown(
             String time)
         {
-            var provider = new TotpProvider();
+            ITotpProvider provider = new TotpProvider();
 
             Assert.Throws<ArgumentException>(() => provider.GetCodeAtSpecificTime("SECRETKEY",
                                                                                   DateTimeOffset.Parse(time,
@@ -182,7 +182,7 @@ namespace SimpleTotp.Tests
             String expectedCode,
             int expectedRemainingSeconds)
         {
-            var provider = new TotpProvider();
+            ITotpProvider provider = new TotpProvider();
 
             var result =
                 provider.GetCodeAtSpecificTime(secret, DateTimeOffset.Parse(time, CultureInfo.InvariantCulture), out var remaining);

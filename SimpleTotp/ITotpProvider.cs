@@ -1,12 +1,10 @@
 ﻿using System;
-using JetBrains.Annotations;
 
 namespace SimpleTotp
 {
     /// <summary>
     /// Simple TOTP algorithm provider
     /// </summary>
-    [PublicAPI]
     public interface ITotpProvider
     {
         /// <summary>
