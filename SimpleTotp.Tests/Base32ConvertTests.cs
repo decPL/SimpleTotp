@@ -1,9 +1,12 @@
-﻿using System;
+﻿// ReSharper disable ExpressionIsAlwaysNull
+// ReSharper disable ConditionIsAlwaysTrueOrFalse
+// ReSharper disable ConvertToConstant.Local
+// ReSharper disable StringLiteralTypo
+
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Xunit;
-// ReSharper disable ExpressionIsAlwaysNull
-// ReSharper disable ConditionIsAlwaysTrueOrFalse
 
 namespace SimpleTotp.Tests
 {
