@@ -1,9 +1,13 @@
 ﻿// ReSharper disable StringLiteralTypo
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
+
+[assembly:InternalsVisibleTo("SimpleTotp.Tests")]
 
 namespace SimpleTotp
 {
@@ -75,18 +79,60 @@ namespace SimpleTotp
             if (String.IsNullOrWhiteSpace(secretKey))
                 throw new ArgumentException($"Provided {nameof(secretKey)} is empty", nameof(secretKey));
 
-            var utcTicks = time.UtcTicks;
-            if (utcTicks <= UnixEpochInTicks)
-                throw new ArgumentException($"{nameof(time)} must be after the Unix Epoch");
+            var counter = this.CalculateCounter(time);
 
-            var counter = (time.UtcTicks - UnixEpochInTicks) / Period;
+            return this.CalculateCodeInternal(Encoding.UTF8.GetBytes(secretKey), counter);
+        }
 
+        /// <inheritdoc />
+        public string GetCodeAtSpecificTime(String secretKey, DateTimeOffset time, out TimeSpan remaining)
+        {
+            remaining = new TimeSpan(Period - time.UtcTicks % Period);
+            return this.GetCodeAtSpecificTime(secretKey, time);
+        }
+
+        /// <summary>
+        /// Returns a collection of valid codes between (<paramref name="time"/> - <paramref name="pastTolerance"/>)
+        /// and (<paramref name="time"/> + <paramref name="futureTolerance"/>).
+        /// </summary>
+        /// <param name="secretKey">User's secret TOTP key</param>
+        /// <param name="time">Reference point in time for specifying the valid time period (usually: current time)</param>
+        /// <param name="pastTolerance">Specified how far to the past will the valid period reach</param>
+        /// <param name="futureTolerance">Specified how far to the future will the valid period reach</param>
+        /// <returns>A collection of valid TOTP codes</returns>
+        protected internal IEnumerable<String> GetValidCodesForPeriod(String secretKey,
+                                                                      DateTimeOffset time,
+                                                                      TimeSpan pastTolerance,
+                                                                      TimeSpan futureTolerance)
+        {
+            if (String.IsNullOrWhiteSpace(secretKey))
+                throw new ArgumentException($"Provided {nameof(secretKey)} is empty", nameof(secretKey));
+
+            var counter = this.CalculateCounter(time);
+            var minCounter = this.CalculateCounter(time - pastTolerance);
+            var maxCounter = this.CalculateCounter(time + futureTolerance);
+            var secretKeyBytes = Encoding.UTF8.GetBytes(secretKey);
+
+            for (var step = minCounter; step <= maxCounter; step++)
+            {
+                yield return this.CalculateCodeInternal(secretKeyBytes, step);
+            }
+        }
+
+        /// <summary>
+        /// Gets a TOTP code based on a secret and a counter
+        /// </summary>
+        /// <param name="secretKeyBytes">User's secret TOTP key as byte array</param>
+        /// <param name="counter">TOTP counter</param>
+        /// <returns>TOTP code</returns>
+        protected string CalculateCodeInternal(byte[] secretKeyBytes, long counter)
+        {
             var bytes = BitConverter.GetBytes(counter);
             if (BitConverter.IsLittleEndian)
                 Array.Reverse(bytes);
 
             byte[] hash;
-            using (var hashAlgorithm = new HMACSHA1(Encoding.UTF8.GetBytes(secretKey)))
+            using (var hashAlgorithm = new HMACSHA1(secretKeyBytes))
             {
                 hash = hashAlgorithm.ComputeHash(bytes);
             }
@@ -103,11 +149,19 @@ namespace SimpleTotp
             return code.PadLeft(CodeDigits, '0');
         }
 
-        /// <inheritdoc />
-        public string GetCodeAtSpecificTime(String secretKey, DateTimeOffset time, out TimeSpan remaining)
+        /// <summary>
+        /// Calculates the counter used to determine the time-based factor in the TOTP code
+        /// </summary>
+        /// <param name="time">Time for which the counter is calculated</param>
+        /// <returns>TOTP counter</returns>
+        protected long CalculateCounter(DateTimeOffset time)
         {
-            remaining = new TimeSpan(Period - time.UtcTicks % Period);
-            return this.GetCodeAtSpecificTime(secretKey, time);
-        }       
+            var utcTicks = time.UtcTicks;
+            if (utcTicks <= UnixEpochInTicks)
+                throw new ArgumentException($"{nameof(time)} must be after the Unix Epoch");
+
+            var counter = (time.UtcTicks - UnixEpochInTicks) / Period;
+            return counter;
+        }
     }
 }

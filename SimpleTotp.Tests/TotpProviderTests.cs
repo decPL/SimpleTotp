@@ -3,6 +3,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Linq;
 using Xunit;
 
 namespace SimpleTotp.Tests
@@ -189,6 +190,25 @@ namespace SimpleTotp.Tests
 
             Assert.Equal(expectedCode, result);
             Assert.Equal(TimeSpan.FromSeconds(expectedRemainingSeconds), remaining);
+        }
+
+        [Fact]
+        public void Given_AnEmptySecretKey_When_GetValidCodesForPeriodIsCalled_Then_AValidCodeRangeIsReturned()
+        {
+            var provider = new TotpProvider();
+
+            var result = provider.GetValidCodesForPeriod("123456",
+                                                         DateTimeOffset.Parse("2019-09-16 15:44:09 +02:00",
+                                                                              CultureInfo.InvariantCulture),
+                                                         TimeSpan.FromSeconds(60),
+                                                         TimeSpan.FromSeconds(30))
+                                 .ToArray();
+
+            Assert.Collection(result,
+                              code => Assert.Equal("437547", code),
+                              code => Assert.Equal("982170", code),
+                              code => Assert.Equal("241812", code),
+                              code => Assert.Equal("900375", code));
         }
     }
 }
