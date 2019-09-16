@@ -10,26 +10,26 @@ namespace SimpleTotp
     public interface ITotpProvider
     {
         /// <summary>
-        /// Returns the secret key encoded using the Base32 encoding
+        /// Calculates the data required for the user to add an account to TOTP authenticators
         /// </summary>
-        /// <param name="secretKey">Secret key</param>
-        /// <returns>Secret key encoded using the Base32 encoding</returns>
-        String GetBase32EncodedSecretKey(String secretKey);
-
-        /// <summary>
-        /// Returns the secret key Uri to be displayed as a QR code for authenticator registration
-        /// </summary>
-        /// <param name="secretKey">Secret key</param>
-        /// <param name="issuer">Secret key issuer</param>
-        /// <param name="accountName">Account name, for which the secret was generated</param>
+        /// <param name="accountName">
+        /// Name of the account for which registration will be made
+        /// <remarks>Has no functional impact in TOTP, but helps the user identify the account in their TOTP authenticator.</remarks>
+        /// </param>
+        /// <param name="issuer">
+        /// Issuer of the TOTP secret key
+        /// <remarks>Has no functional impact in TOTP, but helps the user identify the account in their TOTP authenticator.</remarks>
+        /// </param>
+        /// <param name="secretKey">User's secret TOTP key. Will be generated automatically if none provided.</param>
         /// <param name="prefixAccountNameWithIssuer">
-        /// True if account name should be prefixed with issuer, false otherwise.
+        /// Allows controlling how the QR code uri is generated.
+        /// True if account name should be prefixed with the issuer, false otherwise.
         /// Default - true (recommended).
         /// </param>
-        /// <returns>Secret key Uri to be displayed as a QR code for authenticator registration</returns>
-        String GetRegisterUriForQrCode(String secretKey,
+        /// <returns>Data required to add the specified account to TOTP authenticators</returns>
+        RegistrationData GetAuthenticatorRegistrationData(String accountName,
                                        String issuer,
-                                       String accountName,
+                                                           String secretKey = null,
                                        bool prefixAccountNameWithIssuer = true);
     }
 }

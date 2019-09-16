@@ -9,22 +9,11 @@ namespace SimpleTotp
     public class TotpProvider : ITotpProvider
     {
         /// <inheritdoc />
-        public String GetBase32EncodedSecretKey(String secretKey)
+        public RegistrationData GetAuthenticatorRegistrationData(string accountName,
+                                                                  string issuer,
+                                                                  string secretKey = null,
+                                                                  bool prefixAccountNameWithIssuer = true)
         {
-            if (String.IsNullOrWhiteSpace(secretKey))
-                throw new ArgumentException($"Provided {nameof(secretKey)} is empty", nameof(secretKey));
-
-            return Base32Convert.ToBase32String(Encoding.UTF8.GetBytes(secretKey), false);
-        }
-
-        /// <inheritdoc />
-        public string GetRegisterUriForQrCode(String secretKey,
-                                              String issuer,
-                                              String accountName,
-                                              bool prefixAccountNameWithIssuer = true)
-        {
-            if (String.IsNullOrWhiteSpace(secretKey))
-                throw new ArgumentException($"Provided {nameof(secretKey)} is empty", nameof(secretKey));
             if (String.IsNullOrWhiteSpace(issuer))
                 throw new ArgumentException($"Provided {nameof(issuer)} is empty", nameof(issuer));
             if (String.IsNullOrWhiteSpace(accountName))
@@ -36,13 +25,25 @@ namespace SimpleTotp
             if (accountName.Contains(":"))
                 throw new ArgumentException($"{nameof(accountName)} contains a colon, which is not allowed", nameof(accountName));
 
+            if (String.IsNullOrWhiteSpace(secretKey))
+                secretKey = Guid.NewGuid().ToString();
+
             var issuerEscaped = Uri.EscapeDataString(issuer);
             var accountNameEscaped = prefixAccountNameWithIssuer
                                          ? $"{issuerEscaped}:{Uri.EscapeDataString(accountName)}"
                                          : Uri.EscapeDataString(accountName);
-            var encodedSecret = GetBase32EncodedSecretKey(secretKey);
+            var encodedSecret = Base32Convert.ToBase32String(Encoding.UTF8.GetBytes(secretKey), false);
 
-            return $"otpauth://totp/{accountNameEscaped}?secret={encodedSecret}&issuer={issuerEscaped}";
+            var qrCodeUri = $"otpauth://totp/{accountNameEscaped}?secret={encodedSecret}&issuer={issuerEscaped}";
+
+            return new RegistrationData
+                   {
+                       AccountName = accountName,
+                       Issuer = issuer,
+                       ManualRegistrationKey = encodedSecret,
+                       QrCodeUri = qrCodeUri,
+                       SecretKey = secretKey
+                   };
         }
     }
 }

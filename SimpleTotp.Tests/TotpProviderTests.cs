@@ -14,12 +14,57 @@ namespace SimpleTotp.Tests
         [InlineData("")]
         [InlineData("   ")]
         [InlineData("\t")]
-        public void Given_AnEmptySecretKey_When_GetBase32EncodedSecretKeyIsCalled_Then_AnArgumentExceptionIsThrown(
+        public void Given_AnEmptyAccountName_When_GetAuthenticatorRegistrationDataIsCalled_Then_AnArgumentExceptionIsThrown(
+            String accountName)
+        {
+            var provider = new TotpProvider();
+
+            Assert.Throws<ArgumentException>(() => provider.GetAuthenticatorRegistrationData(accountName, "ISSUER"));
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("   ")]
+        [InlineData("\t")]
+        public void Given_AnEmptyIssuer_When_GetAuthenticatorRegistrationDataIsCalled_Then_AnArgumentExceptionIsThrown(
+            String issuer)
+        {
+            var provider = new TotpProvider();
+
+            Assert.Throws<ArgumentException>(() => provider.GetAuthenticatorRegistrationData("ACCOUNTNAME", issuer));
+        }
+
+        [Fact]
+        public void Given_AnAccountNameWithColon_When_GetAuthenticatorRegistrationDataIsCalled_Then_AnArgumentExceptionIsThrown()
+        {
+            var provider = new TotpProvider();
+
+            Assert.Throws<ArgumentException>(() => provider.GetAuthenticatorRegistrationData("ACCOUNT:NAME", "ISSUER"));
+        }
+
+        [Fact]
+        public void Given_AnIssuerWithColon_When_GetAuthenticatorRegistrationDataIsCalled_Then_AnArgumentExceptionIsThrown()
+        {
+            var provider = new TotpProvider();
+
+            Assert.Throws<ArgumentException>(() => provider.GetAuthenticatorRegistrationData("ACCOUNTNAME", "ISS:UER"));
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("   ")]
+        [InlineData("\t")]
+        public void Given_AnEmptySecretKey_When_GetAuthenticatorRegistrationDataIsCalled_Then_ANewSecretKeyIsGenerated(
             String secretKey)
         {
             var provider = new TotpProvider();
 
-            Assert.Throws<ArgumentException>(() => provider.GetBase32EncodedSecretKey(secretKey));
+            var result = provider.GetAuthenticatorRegistrationData("ACCOUNT_NAME", "ISSUER", secretKey);
+
+            Assert.NotNull(result);
+            Assert.False(String.IsNullOrWhiteSpace(result.SecretKey));
         }
 
         [Theory]
@@ -29,80 +74,16 @@ namespace SimpleTotp.Tests
         [InlineData("12345678", "GEZDGNBVGY3TQ")]
         [InlineData("123456789", "GEZDGNBVGY3TQOI")]
         [InlineData("1234567890", "GEZDGNBVGY3TQOJQ")]
-        public void Given_AValidSecretKey_When_GetBase32EncodedSecretKeyIsCalled_Then_EncodedSecretKeyIsReturned(
+        public void Given_AValidSecretKey_When_GetAuthenticatorRegistrationDataIsCalled_Then_ResultContainsTheEncodedSecretKey(
             String secretKey,
             String expected)
         {
             var provider = new TotpProvider();
 
-            var result = provider.GetBase32EncodedSecretKey(secretKey);
+            var result = provider.GetAuthenticatorRegistrationData("ACCOUNT_NAME", "ISSUER", secretKey);
 
-            Assert.Equal(expected, result);
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        [InlineData("   ")]
-        [InlineData("\t")]
-        public void Given_AnEmptySecretKey_When_GetRegisterUriForQrCodeIsCalled_Then_AnArgumentExceptionIsThrown(
-            String secretKey)
-        {
-            var provider = new TotpProvider();
-
-            Assert.Throws<ArgumentException>(() => provider.GetRegisterUriForQrCode(secretKey,
-                                                                                    "ISSUER",
-                                                                                    "ACCOUNTNAME"));
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        [InlineData("   ")]
-        [InlineData("\t")]
-        public void Given_AnEmptyIssuer_When_GetRegisterUriForQrCodeIsCalled_Then_AnArgumentExceptionIsThrown(
-            String issuer)
-        {
-            var provider = new TotpProvider();
-
-            Assert.Throws<ArgumentException>(() => provider.GetRegisterUriForQrCode("SECRETKEY",
-                                                                                    issuer,
-                                                                                    "ACCOUNTNAME"));
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        [InlineData("   ")]
-        [InlineData("\t")]
-        public void Given_AnEmptyAccountName_When_GetRegisterUriForQrCodeIsCalled_Then_AnArgumentExceptionIsThrown(
-            String accountName)
-        {
-            var provider = new TotpProvider();
-
-            Assert.Throws<ArgumentException>(() => provider.GetRegisterUriForQrCode("SECRETKEY",
-                                                                                    "ISSUER",
-                                                                                    accountName));
-        }
-
-        [Fact]
-        public void Given_AnIssuerWithColon_When_GetRegisterUriForQrCodeIsCalled_Then_AnArgumentExceptionIsThrown()
-        {
-            var provider = new TotpProvider();
-
-            Assert.Throws<ArgumentException>(() => provider.GetRegisterUriForQrCode("SECRETKEY",
-                                                                                    "ISS:UER",
-                                                                                    "ACCOUNTNAME"));
-        }
-
-        [Fact]
-        public void Given_AnAccountNameWithColon_When_GetRegisterUriForQrCodeIsCalled_Then_AnArgumentExceptionIsThrown()
-        {
-            var provider = new TotpProvider();
-
-            Assert.Throws<ArgumentException>(() => provider.GetRegisterUriForQrCode("SECRETKEY",
-                                                                                    "ISSUER",
-                                                                                    "ACCOUNT:NAME"));
+            Assert.NotNull(result);
+            Assert.Equal(expected, result.ManualRegistrationKey);
         }
 
         [Theory]
@@ -116,17 +97,21 @@ namespace SimpleTotp.Tests
             "ISSUER(TEST#ME%)",
             "ACCOUNT&NAME(%3A)",
             "otpauth://totp/ISSUER%28TEST%23ME%25%29:ACCOUNT%26NAME%28%253A%29?secret=GEZDGNBVGY&issuer=ISSUER%28TEST%23ME%25%29")]
-        public void Given_CorrectRegistrationData_When_GetRegisterUriForQrCodeIsCalled_Then_TheCorrectUriIsReturned(
+        public void Given_CorrectRegistrationData_When_GetAuthenticatorRegistrationDataIsCalled_Then_TheCorrectUriIsReturned(
             String secretKey,
             String issuer,
             String accountName,
-            String expected)
+            String expectedQrCode)
         {
             var provider = new TotpProvider();
 
-            var result = provider.GetRegisterUriForQrCode(secretKey, issuer, accountName);
+            var result = provider.GetAuthenticatorRegistrationData(accountName, issuer, secretKey);
 
-            Assert.Equal(expected, result);
+            Assert.NotNull(result);
+            Assert.Equal(secretKey, result.SecretKey);
+            Assert.Equal(accountName, result.AccountName);
+            Assert.Equal(issuer, result.Issuer);
+            Assert.Equal(expectedQrCode, result.QrCodeUri);
         }
 
         [Theory]
@@ -140,17 +125,21 @@ namespace SimpleTotp.Tests
             "ISSUER(TEST#ME%)",
             "ACCOUNT&NAME(%3A)",
             "otpauth://totp/ACCOUNT%26NAME%28%253A%29?secret=GEZDGNBVGY&issuer=ISSUER%28TEST%23ME%25%29")]
-        public void Given_CorrectRegistrationData_When_GetRegisterUriForQrCodeIsCalledWithoutAccountNamePrefixing_Then_TheCorrectUriIsReturned(
+        public void Given_CorrectRegistrationData_When_GetAuthenticatorRegistrationDataIsCalledWithoutAccountNamePrefixing_Then_TheCorrectUriIsReturned(
             String secretKey,
             String issuer,
             String accountName,
-            String expected)
+            String expectedQrCode)
         {
             var provider = new TotpProvider();
 
-            var result = provider.GetRegisterUriForQrCode(secretKey, issuer, accountName, false);
+            var result = provider.GetAuthenticatorRegistrationData(accountName, issuer, secretKey, false);
 
-            Assert.Equal(expected, result);
+            Assert.NotNull(result);
+            Assert.Equal(secretKey, result.SecretKey);
+            Assert.Equal(accountName, result.AccountName);
+            Assert.Equal(issuer, result.Issuer);
+            Assert.Equal(expectedQrCode, result.QrCodeUri);
         }
     }
 }
