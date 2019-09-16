@@ -8,6 +8,11 @@ namespace SimpleTotp
     {
         /// <inheritdoc />
         public String GetBase32EncodedSecretKey(String secretKey)
-            => Base32Convert.ToBase32String(Encoding.UTF8.GetBytes(secretKey), false);
+        {
+            if (String.IsNullOrWhiteSpace(secretKey))
+                throw new ArgumentException($"Provided {nameof(secretKey)} is empty", nameof(secretKey));
+
+            return Base32Convert.ToBase32String(Encoding.UTF8.GetBytes(secretKey), false);
+        }
     }
 }
