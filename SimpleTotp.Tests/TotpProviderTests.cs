@@ -2,6 +2,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using Xunit;
 
 namespace SimpleTotp.Tests
@@ -140,6 +141,54 @@ namespace SimpleTotp.Tests
             Assert.Equal(accountName, result.AccountName);
             Assert.Equal(issuer, result.Issuer);
             Assert.Equal(expectedQrCode, result.QrCodeUri);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("   ")]
+        [InlineData("\t")]
+        public void Given_AnEmptySecretKey_When_GetCodeAtSpecificTimeIsCalled_Then_AnArgumentExceptionIsThrown(
+            String secretKey)
+        {
+            var provider = new TotpProvider();
+
+            Assert.Throws<ArgumentException>(() => provider.GetCodeAtSpecificTime(secretKey,
+                                                                                  DateTimeOffset.Parse("2019-09-16",
+                                                                                                       CultureInfo.InvariantCulture)));
+        }
+
+        [Theory]
+        [InlineData("1600-1-1")]
+        [InlineData("1970-1-1")]
+        public void Given_ATimeBeforeUnixEpoch_When_GetCodeAtSpecificTimeIsCalled_Then_AnArgumentExceptionIsThrown(
+            String time)
+        {
+            var provider = new TotpProvider();
+
+            Assert.Throws<ArgumentException>(() => provider.GetCodeAtSpecificTime("SECRETKEY",
+                                                                                  DateTimeOffset.Parse(time,
+                                                                                                       CultureInfo.InvariantCulture)));
+        }
+
+        [Theory]
+        [InlineData("123456", "2019-09-16 15:40:45 +02:00", "316647", 15)]
+        [InlineData("123456", "2019-09-16 15:42:50 +02:00", "816826", 10)]
+        [InlineData("123456", "2019-09-16 15:44:09 +02:00", "241812", 21)]
+
+        public void Given_AValidCodeAndValidTime_When_GetCodeAtSpecificTimeIsCalled_Then_TheCorrectCodeAndReminderIsReturned(
+            String secret,
+            String time,
+            String expectedCode,
+            int expectedRemainingSeconds)
+        {
+            var provider = new TotpProvider();
+
+            var result =
+                provider.GetCodeAtSpecificTime(secret, DateTimeOffset.Parse(time, CultureInfo.InvariantCulture), out var remaining);
+
+            Assert.Equal(expectedCode, result);
+            Assert.Equal(TimeSpan.FromSeconds(expectedRemainingSeconds), remaining);
         }
     }
 }

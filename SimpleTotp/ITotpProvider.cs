@@ -28,8 +28,33 @@ namespace SimpleTotp
         /// </param>
         /// <returns>Data required to add the specified account to TOTP authenticators</returns>
         RegistrationData GetAuthenticatorRegistrationData(String accountName,
-                                       String issuer,
+                                                           String issuer,
                                                            String secretKey = null,
-                                       bool prefixAccountNameWithIssuer = true);
+                                                           bool prefixAccountNameWithIssuer = true);
+
+        /// <summary>
+        /// Gets a TOTP code for a specific key at a given time point
+        /// <remarks>This can be utilized to write your own TOTP authenticator or for testing your TOTP authentication</remarks>
+        /// </summary>
+        /// <param name="secretKey">User's secret TOTP key</param>
+        /// <param name="time">
+        /// Time point at which to generate the time-based code
+        /// <remarks>Must be greater that the Unix Epoch time</remarks>
+        /// </param>
+        /// <returns>Generated TOTP code</returns>
+        String GetCodeAtSpecificTime(String secretKey, DateTimeOffset time);
+
+        /// <summary>
+        /// Gets a TOTP code for a specific key at a given time point
+        /// <remarks>This can be utilized to write your own TOTP authenticator or for testing your TOTP authentication</remarks>
+        /// </summary>
+        /// <param name="secretKey">User's secret TOTP key</param>
+        /// <param name="time">
+        /// Time point at which to generate the time-based code
+        /// <remarks>Must be greater that the Unix Epoch time</remarks>
+        /// </param>
+        /// <param name="remaining">Remaining time before the current code changes</param>
+        /// <returns>Generated TOTP code</returns>
+        String GetCodeAtSpecificTime(String secretKey, DateTimeOffset time, out TimeSpan remaining);
     }
 }
