@@ -192,23 +192,27 @@ namespace SimpleTotp.Tests
             Assert.Equal(TimeSpan.FromSeconds(expectedRemainingSeconds), remaining);
         }
 
-        [Fact]
-        public void Given_AnEmptySecretKey_When_GetValidCodesForPeriodIsCalled_Then_AValidCodeRangeIsReturned()
+        [Theory]
+        [InlineData("123456", "2019-09-16 15:44:09 +02:00", 60, 30, "437547", "982170", "241812", "900375")]
+        public void Given_AnEmptySecretKey_When_GetValidCodesForPeriodIsCalled_Then_AValidCodeRangeIsReturned(
+            String secret,
+            String time,
+            int pastToleranceSeconds,
+            int futureToleranceSeconds,
+            params String[] expectedCodes)
         {
             var provider = new TotpProvider();
 
-            var result = provider.GetValidCodesForPeriod("123456",
-                                                         DateTimeOffset.Parse("2019-09-16 15:44:09 +02:00",
-                                                                              CultureInfo.InvariantCulture),
-                                                         TimeSpan.FromSeconds(60),
-                                                         TimeSpan.FromSeconds(30))
+            var result = provider.GetValidCodesForPeriod(secret,
+                                                         DateTimeOffset.Parse(time, CultureInfo.InvariantCulture),
+                                                         TimeSpan.FromSeconds(pastToleranceSeconds),
+                                                         TimeSpan.FromSeconds(futureToleranceSeconds))
                                  .ToArray();
 
             Assert.Collection(result,
-                              code => Assert.Equal("437547", code),
-                              code => Assert.Equal("982170", code),
-                              code => Assert.Equal("241812", code),
-                              code => Assert.Equal("900375", code));
+                              expectedCodes
+                                  .Select<String, Action<String>>(expected => code => Assert.Equal(expected, code))
+                                  .ToArray());
         }
     }
 }
