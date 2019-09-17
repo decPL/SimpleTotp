@@ -108,7 +108,6 @@ namespace SimpleTotp
             if (String.IsNullOrWhiteSpace(secretKey))
                 throw new ArgumentException($"Provided {nameof(secretKey)} is empty", nameof(secretKey));
 
-            var counter = this.CalculateCounter(time);
             var minCounter = this.CalculateCounter(time - pastTolerance);
             var maxCounter = this.CalculateCounter(time + futureTolerance);
             var secretKeyBytes = Encoding.UTF8.GetBytes(secretKey);
