@@ -14,10 +14,10 @@ namespace SimpleTotp
         /// <param name="expression">Expression to check against a null/whitespace string</param>
         public static void CheckNotNullOrWhitespace(Expression<Func<String>> expression)
         {
-            if (!String.IsNullOrWhiteSpace(expression.Compile().Invoke()))
+            if (!String.IsNullOrWhiteSpace(expression?.Compile().Invoke()))
                 return;
 
-            var memberName = (expression.Body as MemberExpression)?.Member.Name;
+            var memberName = (expression?.Body as MemberExpression)?.Member.Name;
             if (String.IsNullOrWhiteSpace(memberName))
                 throw new Exception($"Incorrect use of the {nameof(CheckNotNullOrWhitespace)} method - must be a member expression");
 
