@@ -39,12 +39,10 @@ namespace SimpleTotp
         public RegistrationData GetAuthenticatorRegistrationData(string accountName,
                                                                   string issuer,
                                                                   string secretKey = null,
-                                                                  bool prefixAccountNameWithIssuer = true)
+                                                                 bool prefixAccountNameWithIssuer = true)
         {
-            if (String.IsNullOrWhiteSpace(issuer))
-                throw new ArgumentException($"Provided {nameof(issuer)} is empty", nameof(issuer));
-            if (String.IsNullOrWhiteSpace(accountName))
-                throw new ArgumentException($"Provided {nameof(accountName)} is empty", nameof(accountName));
+            ValidationHelper.CheckNotNullOrWhitespace(() => issuer);
+            ValidationHelper.CheckNotNullOrWhitespace(() => accountName);
 
             if (issuer.Contains(":"))
                 throw new ArgumentException($"{nameof(issuer)} contains a colon, which is not allowed", nameof(issuer));
@@ -76,9 +74,8 @@ namespace SimpleTotp
         /// <inheritdoc />
         public string GetCodeAtSpecificTime(string secretKey, DateTimeOffset time)
         {
-            if (String.IsNullOrWhiteSpace(secretKey))
-                throw new ArgumentException($"Provided {nameof(secretKey)} is empty", nameof(secretKey));
-
+            ValidationHelper.CheckNotNullOrWhitespace(() => secretKey);
+            
             var counter = this.CalculateCounter(time);
 
             return this.CalculateCodeInternal(Encoding.UTF8.GetBytes(secretKey), counter);
@@ -105,8 +102,7 @@ namespace SimpleTotp
                                                                       TimeSpan pastTolerance,
                                                                       TimeSpan futureTolerance)
         {
-            if (String.IsNullOrWhiteSpace(secretKey))
-                throw new ArgumentException($"Provided {nameof(secretKey)} is empty", nameof(secretKey));
+            ValidationHelper.CheckNotNullOrWhitespace(() => secretKey);
 
             var minCounter = this.CalculateCounter(time - pastTolerance);
             var maxCounter = this.CalculateCounter(time + futureTolerance);
