@@ -28,6 +28,11 @@ namespace SimpleTotp
         private const char PaddingChar = '=';
 
         /// <summary>
+        /// Longest possible padding length in the Base32 algorithm
+        /// </summary>
+        private const int MaxPaddingLengthInBase32 = (BlockLength - 1) * BitsInByte / BlockLength;
+
+        /// <summary>
         /// Allowed characters for Base32
         /// </summary>
         public static char[] Base32CharacterSet { get; } = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567".ToCharArray();
@@ -54,9 +59,9 @@ namespace SimpleTotp
             }
 
             var inputBitsBuilder = new StringBuilder(input.Length * BitsInByte + BlockLength - 1);
-            foreach (var b in input)
+            foreach (var @byte in input)
             {
-                var value = Convert.ToString(b, 2);
+                var value = Convert.ToString(@byte, 2);
                 inputBitsBuilder.Append(new String('0', BitsInByte - value.Length));
                 inputBitsBuilder.Append(value);
             }
@@ -64,20 +69,22 @@ namespace SimpleTotp
             inputBitsBuilder.Append(new String('0', BlockLength - 1));
 
             var inputBits = inputBitsBuilder.ToString();
-            var result = new StringBuilder(input.Length * BitsInByte / BlockLength + 6);
-            for (int i = 0; i < input.Length * BitsInByte; i += BlockLength)
+            var result = new StringBuilder(input.Length * BitsInByte / BlockLength + MaxPaddingLengthInBase32);
+            for (var i = 0; i < input.Length * BitsInByte; i += BlockLength)
             {
                 var block = inputBits.Substring(i, BlockLength);
 
                 result.Append(Base32CharacterSet[Convert.ToInt32(block, 2)]);
             }
 
-            if (applyPadding)
+            if (!applyPadding)
             {
-                result.Append(new String(PaddingChar,
-                                         (BlockLength * BitsInByte - input.Length * BitsInByte % (BlockLength * BitsInByte))
-                                         % (BlockLength * BitsInByte) / BlockLength));
+                return result.ToString();
             }
+
+            const int bitsInBlock = BlockLength * BitsInByte;
+            result.Append(new String(PaddingChar,
+                                     (bitsInBlock - input.Length * BitsInByte % bitsInBlock) % bitsInBlock / BlockLength));
 
             return result.ToString();
         }

@@ -85,7 +85,7 @@ namespace SimpleTotp
             
             var counter = this.CalculateCounter(time);
 
-            return this.CalculateCodeInternal(Encoding.UTF8.GetBytes(secretKey), counter);
+            return this.CalculateCode(Encoding.UTF8.GetBytes(secretKey), counter);
         }
 
         /// <inheritdoc />
@@ -135,7 +135,7 @@ namespace SimpleTotp
 
             for (var step = minCounter; step <= maxCounter; step++)
             {
-                yield return this.CalculateCodeInternal(secretKeyBytes, step);
+                yield return this.CalculateCode(secretKeyBytes, step);
             }
         }
 
@@ -145,7 +145,7 @@ namespace SimpleTotp
         /// <param name="secretKeyBytes">User's secret TOTP key as byte array</param>
         /// <param name="counter">TOTP counter</param>
         /// <returns>TOTP code</returns>
-        protected string CalculateCodeInternal(byte[] secretKeyBytes, long counter)
+        protected string CalculateCode(byte[] secretKeyBytes, long counter)
         {
             var bytes = BitConverter.GetBytes(counter);
             if (BitConverter.IsLittleEndian)
