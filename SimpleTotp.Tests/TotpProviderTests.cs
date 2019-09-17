@@ -194,7 +194,7 @@ namespace SimpleTotp.Tests
 
         [Theory]
         [InlineData("123456", "2019-09-16 15:44:09 +02:00", 60, 30, "437547", "982170", "241812", "900375")]
-        public void Given_AnEmptySecretKey_When_GetValidCodesForPeriodIsCalled_Then_AValidCodeRangeIsReturned(
+        public void Given_ASecretKeyAndValidTime_When_GetValidCodesForPeriodIsCalled_Then_AValidCodeRangeIsReturned(
             String secret,
             String time,
             int pastToleranceSeconds,
