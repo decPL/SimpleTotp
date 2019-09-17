@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
@@ -35,10 +36,15 @@ namespace SimpleTotp
         /// </summary>
         private const int CodeDigits = 6;
 
+        /// <summary>
+        /// Default tolerance for TOTP code validation
+        /// </summary>
+        private static readonly TimeSpan DefaultTolerance = TimeSpan.FromMinutes(1);
+
         /// <inheritdoc />
-        public RegistrationData GetAuthenticatorRegistrationData(string accountName,
-                                                                  string issuer,
-                                                                  string secretKey = null,
+        public RegistrationData GetAuthenticatorRegistrationData(String accountName,
+                                                                 String issuer,
+                                                                 String secretKey = null,
                                                                  bool prefixAccountNameWithIssuer = true)
         {
             ValidationHelper.CheckNotNullOrWhitespace(() => issuer);
@@ -48,7 +54,8 @@ namespace SimpleTotp
                 throw new ArgumentException($"{nameof(issuer)} contains a colon, which is not allowed", nameof(issuer));
 
             if (accountName.Contains(":"))
-                throw new ArgumentException($"{nameof(accountName)} contains a colon, which is not allowed", nameof(accountName));
+                throw new ArgumentException($"{nameof(accountName)} contains a colon, which is not allowed",
+                                            nameof(accountName));
 
             if (String.IsNullOrWhiteSpace(secretKey))
                 secretKey = Guid.NewGuid().ToString();
@@ -86,6 +93,24 @@ namespace SimpleTotp
         {
             remaining = new TimeSpan(Period - time.UtcTicks % Period);
             return this.GetCodeAtSpecificTime(secretKey, time);
+        }
+
+        /// <inheritdoc />
+        public bool ValidateCode(String secretKey, String code, DateTimeOffset time)
+            => this.ValidateCode(secretKey, code, time, DefaultTolerance);
+
+        /// <inheritdoc />
+        public bool ValidateCode(String secretKey, String code, DateTimeOffset time, TimeSpan tolerance)
+            => this.ValidateCode(secretKey, code, time, tolerance, tolerance);
+
+        /// <inheritdoc />
+        public bool ValidateCode(String secretKey, String code, DateTimeOffset time, TimeSpan pastTolerance, TimeSpan futureTolerance)
+        {
+            ValidationHelper.CheckNotNullOrWhitespace(() => secretKey);
+            ValidationHelper.CheckNotNullOrWhitespace(() => code);
+
+            var validCodes = this.GetValidCodesForPeriod(secretKey, time, pastTolerance, futureTolerance);
+            return validCodes.Contains(code, StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>

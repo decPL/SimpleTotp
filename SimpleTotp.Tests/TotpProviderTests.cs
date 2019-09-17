@@ -214,5 +214,148 @@ namespace SimpleTotp.Tests
                                   .Select<String, Action<String>>(expected => code => Assert.Equal(expected, code))
                                   .ToArray());
         }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("   ")]
+        [InlineData("\t")]
+        public void Given_AnEmptySecretKey_When_ValidateCodeIsCalled_Then_AnArgumentExceptionIsThrown(
+            String secretKey)
+        {
+            ITotpProvider provider = new TotpProvider();
+
+            Assert.Throws<ArgumentException>(() => provider.ValidateCode(secretKey,
+                                                                         "CODE",
+                                                                         DateTimeOffset.Parse("2019-09-16 15:44:09 +02:00",
+                                                                                              CultureInfo.InvariantCulture)));
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("   ")]
+        [InlineData("\t")]
+        public void Given_AnEmptyCode_When_ValidateCodeIsCalled_Then_AnArgumentExceptionIsThrown(
+            String code)
+        {
+            ITotpProvider provider = new TotpProvider();
+
+            Assert.Throws<ArgumentException>(() => provider.ValidateCode("SECRET",
+                                                                         code,
+                                                                         DateTimeOffset.Parse("2019-09-16 15:44:09 +02:00",
+                                                                                              CultureInfo.InvariantCulture)));
+        }
+
+        [Theory]
+        [InlineData("123456", "2019-09-16 15:40:45 +02:00", "316647")]
+        [InlineData("123456", "2019-09-16 15:42:50 +02:00", "816826")]
+        [InlineData("123456", "2019-09-16 15:44:09 +02:00", "241812")]
+        public void Given_TheCorrectCode_When_ValidateCodeIsCalled_Then_ValidResultIsReturned(
+            String secret,
+            String time,
+            String code)
+        {
+            ITotpProvider provider = new TotpProvider();
+
+            var result = provider.ValidateCode(secret, code, DateTimeOffset.Parse(time, CultureInfo.InvariantCulture));
+
+            Assert.True(result);
+        }
+
+        [Theory]
+        [InlineData("123456", "2019-09-16 15:40:45 +02:00", "aaaaaa")]
+        [InlineData("123456", "2019-09-16 15:42:50 +02:00", "111111")]
+        [InlineData("123456", "2019-09-16 15:44:09 +02:00", "24181")]
+        public void Given_AnIncorrectCode_When_ValidateCodeIsCalled_Then_InvalidResultIsReturned(
+            String secret,
+            String time,
+            String code)
+        {
+            ITotpProvider provider = new TotpProvider();
+
+            var result = provider.ValidateCode(secret, code, DateTimeOffset.Parse(time, CultureInfo.InvariantCulture));
+
+            Assert.False(result);
+        }
+
+        [Theory]
+        [InlineData("123456", "2019-09-16 15:40:45 +02:00", "377278", 60)]
+        [InlineData("123456", "2019-09-16 15:42:50 +02:00", "655989", 60)]
+        [InlineData("123456", "2019-09-16 15:44:09 +02:00", "437547", 60)]
+        public void Given_ACodeThatWasCorrectXSecondsAgo_When_ValidateCodeIsCalledWithToleranceX_Then_ValidResultIsReturned(
+            String secret,
+            String time,
+            String code,
+            int toleranceInSeconds)
+        {
+            ITotpProvider provider = new TotpProvider();
+
+            var result = provider.ValidateCode(secret,
+                                               code,
+                                               DateTimeOffset.Parse(time, CultureInfo.InvariantCulture),
+                                               TimeSpan.FromSeconds(toleranceInSeconds));
+
+            Assert.True(result);
+        }
+
+        [Theory]
+        [InlineData("123456", "2019-09-16 15:40:45 +02:00", "377278")]
+        [InlineData("123456", "2019-09-16 15:42:50 +02:00", "655989")]
+        [InlineData("123456", "2019-09-16 15:44:09 +02:00", "437547")]
+        public void Given_ACodeThatWasCorrectXSecondsAgo_When_ValidateCodeIsCalledWithoutTolerance_Then_InvalidResultIsReturned(
+            String secret,
+            String time,
+            String code)
+        {
+            ITotpProvider provider = new TotpProvider();
+
+            var result = provider.ValidateCode(secret,
+                                               code,
+                                               DateTimeOffset.Parse(time, CultureInfo.InvariantCulture),
+                                               TimeSpan.Zero);
+
+            Assert.False(result);
+        }
+
+        [Theory]
+        [InlineData("123456", "2019-09-16 15:40:45 +02:00", "655989", 60)]
+        [InlineData("123456", "2019-09-16 15:42:50 +02:00", "982170", 60)]
+        [InlineData("123456", "2019-09-16 15:44:09 +02:00", "882146", 60)]
+        public void Given_ACodeThatWouldBeCorrectXSecondsInTheFuture_When_ValidateCodeIsCalledWithToleranceX_Then_ValidResultIsReturned(
+            String secret,
+            String time,
+            String code,
+            int futureToleranceInSeconds)
+        {
+            ITotpProvider provider = new TotpProvider();
+
+            var result = provider.ValidateCode(secret,
+                                               code,
+                                               DateTimeOffset.Parse(time, CultureInfo.InvariantCulture),
+                                               TimeSpan.Zero,
+                                               TimeSpan.FromSeconds(futureToleranceInSeconds));
+
+            Assert.True(result);
+        }
+
+        [Theory]
+        [InlineData("123456", "2019-09-16 15:40:45 +02:00", "655989")]
+        [InlineData("123456", "2019-09-16 15:42:50 +02:00", "982170")]
+        [InlineData("123456", "2019-09-16 15:44:09 +02:00", "882146")]
+        public void Given_ACodeThatWouldBeCorrectXSecondsInTheFuture_When_ValidateCodeIsCalledWithoutTolerance_Then_InvalidResultIsReturned(
+            String secret,
+            String time,
+            String code)
+        {
+            ITotpProvider provider = new TotpProvider();
+
+            var result = provider.ValidateCode(secret,
+                                               code,
+                                               DateTimeOffset.Parse(time, CultureInfo.InvariantCulture),
+                                               TimeSpan.Zero);
+
+            Assert.False(result);
+        }
     }
 }
