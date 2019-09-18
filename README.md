@@ -115,6 +115,6 @@ As mentioned above, feel free to contribute to our project. We do not have any s
 
 ## License
 
-**SimpleTotp** is licensed under MIT License.
+**SimpleTotp** is licensed under the MIT License.
 
 Copyright (c) 2019 Al4ric, decPL & kryzalid87
