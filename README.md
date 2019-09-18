@@ -3,6 +3,8 @@
 
 This is a simple library that provides server-side code (and simple client-side code) required to use [**T**ime-based **O**ne-**T**ime **P**asswords](https://en.wikipedia.org/wiki/Time-based_One-time_Password_algorithm) as [Two-factor authentication](https://en.wikipedia.org/wiki/Multi-factor_authentication) in your app.
 
+Both the TOTP generation/validation and the registration info should work correctly with any existing TOTP 2FA authenticator (we did test it with [Google Authenticator](https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2) and [Microsoft Authenticator](https://play.google.com/store/apps/details?id=com.azure.authenticator)).
+
 ## Motivation
 When looking for an existing TOTP library on [NuGet](https://www.nuget.org/) we've realized that there's only a couple available and all of them seem to suffer from one of the following problems (or a mixture of them):
 
