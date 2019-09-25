@@ -97,7 +97,7 @@ var twoFASuccess = provider.ValidateCode(yourCode_UsersSecretKey,
 ```
 
 ### 3. Displaying the current code
-If you feel adventurous and want to write your own Authenticator app, you can use the `TotpProvider` to display the current code (and remaining time until it changes)
+If you feel adventurous and want to write your own Authenticator app, you can use the `TotpProvider` to display the current code (and the remaining time until it changes)
 
 ```csharp
 var provider = new TotpProvider();
@@ -112,6 +112,10 @@ code = provider.GetCodeAtSpecificTime(yourCode_UsersSecretKey,
 ## Contribute
 
 As mentioned above, feel free to contribute to our project. We do not have any specific guidelines for contribution at the moment (mainly because we don't expect a lot of it, so it seemed redundant to write them) - so just fork away and we'll try to work something out if needed (feel free to contact us ahead of time if you want).
+
+## Special thanks
+
+We would like to especially thank our wonderful colleagues at [Omada](https://www.omada.net) for being an inspiration for this project and allowing us to give something back to the development community.
 
 ## License
 
