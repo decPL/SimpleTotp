@@ -18,7 +18,11 @@ The project is provided as-is, but we're more than willing to improve and work o
 
 ## Installation
 
-*TBD - once we get the package out on NuGet*
+Just grab the **SimpleTotp** [Nuget package](https://www.nuget.org/packages/SimpleTotp/):
+
+```powershell
+PM> Install-Package SimpleTotp
+```
 
 ## Examples of use
 
