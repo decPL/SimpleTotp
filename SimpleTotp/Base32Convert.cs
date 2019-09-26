@@ -89,6 +89,11 @@ namespace SimpleTotp
             return result.ToString();
         }
 
+        /// <summary>
+        /// Converts input from a Base32 string to a byte array
+        /// </summary>
+        /// <param name="base32String">Base32 string</param>
+        /// <returns>Decoded data</returns>
         public static byte[] FromBase32String(String base32String)
         {
             if (base32String == null)
