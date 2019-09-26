@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>SimpleTotp</id>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
     <title>SimpleTotp</title>
     <authors>Al4ric,decPL,kryzalid87</authors>
     <owners>Al4ric,decPL,kryzalid87</owners>
@@ -10,7 +10,7 @@
     <projectUrl>https://github.com/decPL/SimpleTotp</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Simple TOTP library for .NET Standard 1.3</description>
-    <releaseNotes>Fixed documentation for .NET Core projects</releaseNotes>
+    <releaseNotes>https://github.com/decPL/SimpleTotp/blob/master/ReleaseNotes.md</releaseNotes>
     <copyright>Copyright (c) 2019 Al4ric, decPL &amp; kryzalid87</copyright>
     <tags>TOTP 2fa two-factor authentication authenticator</tags>
     <dependencies>
